@@ -13,18 +13,23 @@ const gui = new dat.GUI();
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
+const params = {
+  bgColor: "#fff"
+};
+
 // Scene
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(params.bgColor);
 
-// Axes helper
-const axesHelper = new THREE.AxesHelper();
-scene.add(axesHelper);
+gui.addColor(params, "bgColor").onChange(() => {
+  scene.background.set(params.bgColor);
+});
 
 /**
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
-const matcapTexture = textureLoader.load("/textures/matcaps/9.png");
+const matcapTexture = textureLoader.load("/textures/matcaps/10.jpg");
 
 /**
  * Fonts
@@ -32,20 +37,17 @@ const matcapTexture = textureLoader.load("/textures/matcaps/9.png");
 const fontLoader = new THREE.FontLoader();
 fontLoader.load("/fonts/gentilis_regular.typeface.json", (font) => {
   // text object
-  const textGeometry = new THREE.TextBufferGeometry(
-    "creative\ndeveloper\ndesigner\ndigital artist",
-    {
-      font,
-      size: 0.5,
-      height: 0.2,
-      curveSegments: 4,
-      bevelEnabled: true,
-      bevelThickness: 0.03,
-      bevelSize: 0.02,
-      bevelOffset: 0,
-      bevelSegments: 5
-    }
-  );
+  const textGeometry = new THREE.TextBufferGeometry("MaxCode\nCreative\nDeveloper", {
+    font,
+    size: 0.5,
+    height: 0.2,
+    curveSegments: 4,
+    bevelEnabled: true,
+    bevelThickness: 0.03,
+    bevelSize: 0.02,
+    bevelOffset: 0,
+    bevelSegments: 5
+  });
 
   // simple way for center text
   textGeometry.center();
@@ -54,37 +56,49 @@ fontLoader.load("/fonts/gentilis_regular.typeface.json", (font) => {
   // text mesh
   const text = new THREE.Mesh(textGeometry, material);
   scene.add(text);
-  camera.lookAt(text.position);
+  // camera.lookAt(text.position);
 
   // torus object
+  // new color() = new THREE.Color();
+  const objectMaterial = new THREE.MeshBasicMaterial({ color: 0x000 });
+
   const torusGeometry = new THREE.TorusBufferGeometry(0.3, 0.2, 20, 45);
+  // cube object
+  const cubeGeometry = new THREE.BoxBufferGeometry(1, 1, 1);
+
+  // color for cube and torus
+  const blueColor = "blue";
+  const orangeColor = "orange";
 
   // loop that allows you to create several objects
   for (let i = 0; i < 100; i++) {
-    // torus mesh
-    const torus = new THREE.Mesh(torusGeometry, material);
+    const objectGeometry = i % 2 === 1 ? torusGeometry : cubeGeometry;
+    const color = i % 2 === 1 ? blueColor : orangeColor;
+
+    objectMaterial.color.set(color);
+
+    const meshObject = new THREE.Mesh(objectGeometry, objectMaterial);
 
     // random position for each object
-    torus.position.set(
-      (Math.random() - 0.5) * 10,
-      (Math.random() - 0.5) * 10,
-      (Math.random() - 0.5) * 10
+    meshObject.position.set(
+      (Math.random() - 0.5) * 15,
+      (Math.random() - 0.5) * 15,
+      (Math.random() - 0.5) * 20
     );
 
     // random rotation for each object
-    torus.rotation.x = Math.random() * Math.PI;
-    torus.rotation.y = Math.random() * Math.PI;
+    meshObject.rotation.x = Math.random() * Math.PI;
+    meshObject.rotation.y = Math.random() * Math.PI;
 
     // random scale for each object
-    const scale = Math.random();
-    torus.scale.set(scale, scale, scale);
+    // const scale = Math.random();
+    const scale = 1;
+    meshObject.scale.set(scale, scale, scale);
 
-    // adding torus object to the scene
-    scene.add(torus);
+    // adding objects to the scene
+    scene.add(meshObject);
   }
 });
-
-console.log(fontLoader.load.path);
 
 /**
  * Sizes
@@ -115,7 +129,7 @@ window.addEventListener("resize", () => {
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
 camera.position.x = 1;
 camera.position.y = 1;
-camera.position.z = 2;
+camera.position.z = 3;
 scene.add(camera);
 
 // Controls
